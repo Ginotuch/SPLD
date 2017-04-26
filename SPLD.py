@@ -24,9 +24,7 @@ def user_input(maximum):  # Get's user input for menu choice, repeats till accep
                 print("Just read the damn options,", choice, "isn't an option")
                 choice = int(input("Select your choice: "))
         except ValueError:
-            print("\nEnter a number between 0 and", maximum, "(It's really not that hard)")
-            print("\n")
-            menu_options()
+            print("\nEnter a number between 0 and", maximum, "(It's really not that hard)\n")
     return choice
 
 
@@ -170,9 +168,24 @@ def edit_list(database):
             elif option == 3:
                 checked_exists = check_list_exists(database)  # Checks that the chosen list exists, then saves it
                 if checked_exists is not None:
-                    del database[checked_exists]
-                    print("Successfully deleted.")
-                    return database
+                    print("\nContents of", checked_exists + ":")
+                    print(", ".join(str(x) for x in database[checked_exists]))
+                    for x in range(0, len(database[checked_exists])):
+                        first_spaces = " " * (len(database[checked_exists][x]) // 2)
+                        second_spaces = " " * ((len(database[checked_exists][x]) - (len(database[checked_exists][x]) // 2)) + 1)
+                        print(first_spaces + str(x) + second_spaces, end="")
+                    print()
+
+                    def edit_menu():
+                        print("\nEditing:", checked_exists)
+                        print("-" * len("Edit lists"))
+                        print("  1. Print ldasfist names")
+                        print("  2. Print lisasdft contents by name")
+                        print("  3. Edit list by name")
+                        print("  0. Exit")
+                    edit_menu()
+                    while option <= 3:
+                        option = user_input(3)
                 else:
                     print("Cancelled")
             elif option == 0:
@@ -183,7 +196,9 @@ def edit_list(database):
 def main():
     lists = defaultdict(list)
     menu_options()
-    option = user_input(7)
+    option = user_input(8)
+    test = 'name'
+    lists[test] = ['ab', 'asadfasdbc', 'abcd', 'abcsdffde', 'abcdef']
     # User choice selection till they decide to exit
     while option <= 8:
         if option == 1:  # print all names
@@ -219,7 +234,7 @@ def main():
             print("todo 0")
         print("\n")
         menu_options()
-        option = user_input(7)
+        option = user_input(8)
     print("\n\nk bye")
 
 
