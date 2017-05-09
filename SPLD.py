@@ -9,6 +9,9 @@ Author: Ginotuch
 """
 from collections import defaultdict
 from re import match
+from tkinter import Tk
+from tkinter.filedialog import asksaveasfilename, askopenfilename
+import pickle
 
 
 def menu_options():
@@ -16,12 +19,12 @@ def menu_options():
     print("-"*len("Create and edit lists"))
     print("  1. Print list names")
     print("  2. Print list contents by name")
-    print("  3. Print all lists and contents UNFINISHED")
+    print("  3. Print all lists and contents NOT DONE")
     print("  4. Create new list")
     print("  5. Delete list")
-    print("  6. Edit list IN PROGRESS")
-    print("  7. Import list UNFINISHED")
-    print("  8. Save database to file UNFINISHED")
+    print("  6. Edit list MOSTLY DONE")
+    print("  7. Import database")
+    print("  8. Save database to file")
     print("  9. Exit UNFINISHED (STILL WORKS)")
 
 
@@ -53,6 +56,21 @@ def user_input(maximum, exit_key, allowed_text):  # Choice selecting, also handl
     return choice
 
 
+def yes_no(message=None, exit_word=None):
+    if message is None:
+        message = "Type yes or no (Y/N): "
+    y_n_input = input(message).lower()
+    if (y_n_input == exit_word) and (exit_word is not None):
+        return
+    while (y_n_input != 'y') and (y_n_input != 'n') and (y_n_input != "yes") and (y_n_input != "no"):
+        print("Invalid input\n")
+        y_n_input = input(message).lower()
+    if (y_n_input == 'y') or (y_n_input == "yes"):
+        return True
+    elif (y_n_input == 'n') or (y_n_input == "no"):
+        return False
+
+
 def store_in_list(list_name):
     count = None
     value_count = None
@@ -78,7 +96,7 @@ def store_in_list(list_name):
 
 
 def name_list(database):  # Names a newly created list (From option 3)
-    banned_names = ["exit", "cancel", ""]
+    banned_names = ["exit", "cancel", "", "list"]
     found = None
     name = None  # This isn't needed, it's just so that pycharm stops complaining
     while found is None:
@@ -175,9 +193,10 @@ def delete_list(database):
             return
 
 
-def check_database_size(database, minimum):  # Makes sure database is at least one.
+def check_database_size(database, minimum, no_print=False):  # Makes sure database is at least one.
     if len(database) < minimum:  # Checks if there are lists and exists current task if there are none
-        print("Not enough lists in database, returning to menu.")
+        if not no_print:
+            print("Not enough lists in database, returning to menu.")
         return False
     else:
         return True
@@ -193,15 +212,24 @@ def nice_print(database, list_name):
     count = 1
     for x in database[list_name]:
         if count < 11:
-            spaces = " "
+            spaces = ", "
         else:
-            spaces = " " * (len(str(count)))
-        string += [str(x) + "," + spaces]
-        count += 1
+            if database[list_name].index(x) == (len(database[list_name]) - 2):
+                spaces = ""
+            else:
+                spaces = " " * (len(str(count)))
+        string += [str(x)]
+        if count < 11:
+            string += [spaces]
+            count += 1
+        else:
+            string += [","]
+            string += [spaces]
+            count += 1
+    del string[len(string) - 1]
     for i in string:
         print(i, sep="", end="")
     print("\n", index_string, sep="")
-    print()
 
 
 def edit_list(database):
@@ -303,8 +331,7 @@ def edit_list(database):
                         elif not user_cancelled:
                             new_list = []
                             for i in selected_lists:
-                                for x in database[i]:
-                                    new_list += [x]
+                                new_list += database[i]
                             print("Please enter a name for the combined list:")
                             new_name = name_list(database)
                             database[new_name] = new_list
@@ -328,10 +355,48 @@ def edit_list(database):
                 return
 
 
+def save_database(database):
+    print("Please select save location...")
+    root = Tk()
+    root.attributes("-topmost", True)  # Puts save window at the top of all windows
+    root.withdraw()  # Removes the root window (Just blank currently)
+    save_location = asksaveasfilename(defaultextension=".spld", filetypes=(("SPLD database", "*.spld"),))
+    root.destroy()
+    if len(save_location) == 0:
+        print("\nCancelled")
+        return
+    print(save_location)
+    with open(save_location, "wb") as save_file:
+        pickle.dump(database, save_file)
+    print("\nSaved successfully")
+    return True
+
+
+def import_database(database):
+    print("\nImport database:")
+    if check_database_size(database, 1, no_print=True):
+        if not yes_no("This will overwrite the existing database, do you want to continue?(y/n): "):
+            return
+    print("Please select database location...")
+    root = Tk()
+    root.attributes("-topmost", True)
+    root.withdraw()
+    open_location = askopenfilename(defaultextension=".spld", filetypes=(("SPLD database", "*.spld"),))
+    root.destroy()
+    if len(open_location) == 0:
+        print("\nCancelled")
+        return
+    with open(open_location, 'rb') as handle:
+        database = pickle.load(handle)
+    print("\nImported successfully")
+    return database
+
+
 def main():
     lists = defaultdict(list)
     menu_options()
     option = user_input(8, 9, "NONE")
+    unsaved = False
 
     # For testing, creates temp lists
     test = 'test'
@@ -344,7 +409,7 @@ def main():
     lists[test] = ['e', 'f', 'g', 'h']
 
     # User choice selection till they decide to exit
-    while option <= 8:
+    while option <= 9:
         if option == 1:  # print all names
             if check_database_size(lists, 1) is True:
                 print_list_names(lists)
@@ -358,24 +423,37 @@ def main():
             temp_lists = create_a_list(lists)
             if temp_lists is not None:
                 lists = temp_lists
+                unsaved = True
         elif option == 5:  # Delete list
             if check_database_size(lists, 1) is True:
                 temp_lists = delete_list(lists)
                 if temp_lists is not None:
                     lists = temp_lists
+                    unsaved = True
         elif option == 6:  # Edit a list TODO: Sorting
             edit_list(lists)
         elif option == 7:
-            print("todo 7")
-            # Todo: Import list
+            importing = import_database(lists)
+            if importing is not None:
+                lists = importing
+                unsaved = False
         elif option == 8:  # save
             if check_database_size(lists, 1) is True:
-                print("Todo 0")
-            # Todo: Save to file. Keeps history of last file, checks for overwrite.
-            print("todo 9")
+                save_database(lists)
+                unsaved = False
         elif option == 9:  # exit
-            # Todo: Check for unsaved changes
-            break
+            if unsaved:
+                save_choice = yes_no("There are unsaved changes, do you want to save? (yes/no/cancel): ",
+                                     exit_word="cancel")
+                if save_choice:
+                    if save_database(lists) is not None:
+                        break
+                if save_choice is None:
+                    print("Cancelled")
+                else:
+                    break
+            else:
+                break
         print("\n")
         menu_options()
         option = user_input(8, 9, "NONE")
