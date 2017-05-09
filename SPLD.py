@@ -11,7 +11,7 @@ from collections import defaultdict
 from re import match
 from tkinter import Tk
 from tkinter.filedialog import asksaveasfilename, askopenfilename
-import pickle
+from pickle import dump, load
 
 
 def menu_options():
@@ -211,7 +211,7 @@ def nice_print(database, list_name):
     string = []
     count = 1
     for x in database[list_name]:
-        if count < 11:
+        if count < 11:  # This is because "10" has to digits and messes with the spacing.
             spaces = ", "
         else:
             if database[list_name].index(x) == (len(database[list_name]) - 2):
@@ -266,8 +266,8 @@ def edit_list(database):
                             print("\nChose from the index which item is deleted from:", checked_exists)
                             option_3 = False
                             while not option_3:
-                                nice_print(database, checked_exists)
-                                option_3 = user_input((len(checked_exists) - 1), None, "exit")
+                                nice_print(database, checked_exists)  # Prints out all items in the list, with indexes
+                                option_3 = user_input((len(checked_exists)), None, "exit")
                                 if not option_3:
                                     print("\nCancelled")
                                     edit_menu_2()
@@ -341,10 +341,12 @@ def edit_list(database):
                             chosen = False
                             while not chosen:
                                 delete_or_not = input("Delete the old lists that were merged? (Y/N): ").lower()
-                                if delete_or_not == "y" or delete_or_not == "n":
+                                if delete_or_not == "y":
                                     for i in selected_lists:
                                         del database[i]
                                     print("Deleted", merge_input, "lists")
+                                    chosen = True
+                                elif delete_or_not == "n":
                                     chosen = True
                                 else:
                                     print(" Please type \"y\" or \"n\'")
@@ -362,12 +364,12 @@ def save_database(database):
     root.withdraw()  # Removes the root window (Just blank currently)
     save_location = asksaveasfilename(defaultextension=".spld", filetypes=(("SPLD database", "*.spld"),))
     root.destroy()
-    if len(save_location) == 0:
+    if len(save_location) == 0:  # This handles if the user cancels on the file selection gui
         print("\nCancelled")
         return
     print(save_location)
     with open(save_location, "wb") as save_file:
-        pickle.dump(database, save_file)
+        dump(database, save_file)
     print("\nSaved successfully")
     return True
 
@@ -381,13 +383,13 @@ def import_database(database):
     root = Tk()
     root.attributes("-topmost", True)
     root.withdraw()
-    open_location = askopenfilename(defaultextension=".spld", filetypes=(("SPLD database", "*.spld"),))
+    open_location = askopenfilename(defaultextension=".spld", filetypes=(("SPLD database", "*.spld"),))  # File selector
     root.destroy()
     if len(open_location) == 0:
         print("\nCancelled")
         return
     with open(open_location, 'rb') as handle:
-        database = pickle.load(handle)
+        database = load(handle)
     print("\nImported successfully")
     return database
 
@@ -396,7 +398,7 @@ def main():
     lists = defaultdict(list)
     menu_options()
     option = user_input(8, 9, "NONE")
-    unsaved = False
+    unsaved = False  # Tracks whether there are unsaved changes in the database
 
     # For testing, creates temp lists
     test = 'test'
@@ -457,7 +459,7 @@ def main():
         print("\n")
         menu_options()
         option = user_input(8, 9, "NONE")
-    print("\n\nk bye")
+    print("\n\nExiting")
 
 
 main()
