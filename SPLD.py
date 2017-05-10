@@ -207,9 +207,9 @@ def check_database_size(database, minimum, no_print=False):  # Makes sure databa
 
 def nice_print(database, list_name):
     index_string = ""
-    for x in range(0, len(database[list_name])):
-        first_spaces = " " * (len(database[list_name][x]) // 2)
-        second_spaces = " " * ((len(database[list_name][x]) - (len(database[list_name][x]) // 2)) + 1)
+    for x in range(0, len(database[list_name])):  # This is for creating the index numbers to print
+        first_spaces = " " * (len(database[list_name][x]) // 2)  # Enough spaces to that the index number is centered
+        second_spaces = " " * ((len(database[list_name][x]) - (len(database[list_name][x]) // 2)) + 1)  # Centers next
         index_string += first_spaces + str(x) + second_spaces
     string = []
     count = 1
@@ -271,7 +271,7 @@ def edit_list(database, unsaved):
                             while not option_3:
                                 nice_print(database, checked_exists)  # Prints out all items in the list, with indexes
                                 option_3 = user_input((len(checked_exists)), None, "exit")
-                                if not option_3:
+                                if option_3 is False:
                                     print("\nCancelled")
                                     edit_menu_2()
                                     break
@@ -301,7 +301,7 @@ def edit_list(database, unsaved):
                     print(" Cancelled")
                     edit_menu()
             elif option == 2:
-                if check_database_size(database, 2):
+                if check_database_size(database, 2):  # Makes sure there are at least two lists in the database to merge
                     print_list_names(database)
                     choice = None
                     while choice is None:
@@ -324,7 +324,7 @@ def edit_list(database, unsaved):
                         user_cancelled = False
                         for i in range(0, choice):
                             temp = check_list_exists(database, selected_lists)
-                            if temp is None:
+                            if temp is None:  # Checks if the user has cancelled or not, if so the loop won't continue
                                 user_cancelled = True
                                 break
                             else:
@@ -402,7 +402,7 @@ def import_database(database):  # Mostly the same as save_database, check there 
 
 def main():
     lists = defaultdict(list)
-    unsaved = [False]  # Tracks whether there are unsaved changes in the database. It's a list so it's mutable
+    unsaved = [False]  # Tracks unsaved changes, it's a list so that it can be changed within functions.
     menu_options(unsaved)
     option = user_input(8, 9, "NONE")
 
@@ -459,6 +459,8 @@ def main():
             else:
                 break
         print("\n")
+        if len(lists) < 1:  # If there are no items in the list it will not say that here are unsaved changes.
+            unsaved = [False]
         menu_options(unsaved)
         option = user_input(8, 9, "NONE")
     print("\n\nExiting")
