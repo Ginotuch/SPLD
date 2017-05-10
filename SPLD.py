@@ -25,9 +25,9 @@ def menu_options(unsaved):
     print("  6. Edit list MOSTLY DONE")
     print("  7. Import database")
     print("  8. Save database to file")
-    if unsaved:
+    if unsaved[0] is True:
         print("  9. Exit*")  # Shows if there are unsaved changes
-    elif not unsaved:
+    elif not unsaved[0]:
         print("  9. Exit")
 
 
@@ -235,7 +235,7 @@ def nice_print(database, list_name):
     print("\n", index_string, sep="")
 
 
-def edit_list(database):
+def edit_list(database, unsaved):
     if check_database_size(database, 1) is True:
         def edit_menu():
             print("\nEdit lists")
@@ -265,7 +265,7 @@ def edit_list(database):
                     option_2 = 1  # This is just a choice tracker, it doesn't mean they selected menu option 2.
                     while option_2 <= 3:
                         option_2 = user_input(3, 9, "exit")
-                        if option_2 == 1:
+                        if option_2 == 1:  # Deletes an item
                             print("\nChose from the index which item is deleted from:", checked_exists)
                             option_3 = False
                             while not option_3:
@@ -279,16 +279,18 @@ def edit_list(database):
                                     del database[checked_exists][option_3]
                                     print("\nSuccessfully deleted\nUpdated list:")
                                     nice_print(database, checked_exists)
+                                    unsaved[0] = True
                                     edit_menu_2()
-                        elif option_2 == 2:
+                        elif option_2 == 2:  # Adds new item to list
                             temp_list = store_in_list(checked_exists)
                             if temp_list is None:
                                 edit_menu_2()
                                 continue
                             for i in temp_list:
                                 database[checked_exists].append(i)
-                                print("\nSuccessfully added\nUpdated list:")
-                                nice_print(database, checked_exists)
+                            print("\nSuccessfully added\nUpdated list:")
+                            unsaved[0] = True
+                            nice_print(database, checked_exists)
                             edit_menu_2()
                         elif option_2 == 3:
                             print("Print sort list")
@@ -339,6 +341,7 @@ def edit_list(database):
                             new_name = name_list(database)
                             database[new_name] = new_list
                             print(" Successfully merged")
+                            unsaved[0] = True
                             print("Newly created list:")
                             print(new_name + ":", ", ".join(str(x) for x in database[new_name]))
                             chosen = False
@@ -377,7 +380,7 @@ def save_database(database):
     return True
 
 
-def import_database(database):
+def import_database(database):  # Mostly the same as save_database, check there for more comments
     print("\nImport database:")
     if check_database_size(database, 1, no_print=True):
         if not yes_no("This will overwrite the existing database, do you want to continue?(y/n): "):
@@ -392,26 +395,22 @@ def import_database(database):
         print("\nCancelled")
         return
     with open(open_location, 'rb') as handle:
-        database = load(handle)
+        database = load(handle)  # Replaces the current database with the imported one
     print("\nImported successfully")
     return database
 
 
 def main():
     lists = defaultdict(list)
-    unsaved = False  # Tracks whether there are unsaved changes in the database
+    unsaved = [False]  # Tracks whether there are unsaved changes in the database. It's a list so it's mutable
     menu_options(unsaved)
     option = user_input(8, 9, "NONE")
 
     # For testing, creates temp lists
-    test = 'test'
-    lists[test] = ['ab', 'testing', 'word', 'characters', 'And other things']
-    test = 'test2'
-    lists[test] = ['this', 'is', 'another', 'test']
-    test = 'test3'
-    lists[test] = ['a', 'b', 'c', 'd']
-    test = 'test4'
-    lists[test] = ['e', 'f', 'g', 'h']
+    lists['test'] = ['ab', 'testing', 'word', 'characters', 'And other things']
+    lists['test2'] = ['this', 'is', 'another', 'test']
+    lists['test3'] = ['a', 'b', 'c', 'd']
+    lists['test4'] = ['e', 'f', 'g', 'h']
 
     # User choice selection till they decide to exit
     while option <= 9:
@@ -428,26 +427,26 @@ def main():
             temp_lists = create_a_list(lists)
             if temp_lists is not None:
                 lists = temp_lists
-                unsaved = True
+                unsaved[0] = True
         elif option == 5:  # Delete list
             if check_database_size(lists, 1) is True:
                 temp_lists = delete_list(lists)
                 if temp_lists is not None:
                     lists = temp_lists
-                    unsaved = True
+                    unsaved[0] = True
         elif option == 6:  # Edit a list TODO: Sorting
-            edit_list(lists)
+            edit_list(lists, unsaved)
         elif option == 7:
             importing = import_database(lists)
             if importing is not None:
                 lists = importing
-                unsaved = False
+                unsaved[0] = False
         elif option == 8:  # save
             if check_database_size(lists, 1) is True:
                 save_database(lists)
-                unsaved = False
+                unsaved[0] = False
         elif option == 9:  # exit
-            if unsaved:
+            if unsaved[0] is True:
                 save_choice = yes_no("There are unsaved changes, do you want to save? (yes/no/cancel): ",
                                      exit_word="cancel")
                 if save_choice:
