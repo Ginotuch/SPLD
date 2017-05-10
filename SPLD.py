@@ -14,7 +14,7 @@ from tkinter.filedialog import asksaveasfilename, askopenfilename
 from pickle import dump, load
 
 
-def menu_options():
+def menu_options(unsaved):
     print("Create and edit lists")
     print("-"*len("Create and edit lists"))
     print("  1. Print list names")
@@ -25,7 +25,10 @@ def menu_options():
     print("  6. Edit list MOSTLY DONE")
     print("  7. Import database")
     print("  8. Save database to file")
-    print("  9. Exit UNFINISHED (STILL WORKS)")
+    if unsaved:
+        print("  9. Exit*")  # Shows if there are unsaved changes
+    elif not unsaved:
+        print("  9. Exit")
 
 
 def user_input(maximum, exit_key, allowed_text):  # Choice selecting, also handles exiting/cancelling
@@ -180,7 +183,7 @@ def delete_list(database):
             print_list_by_name(database)
             delete_menu()
         elif option == 3:
-            checked_exists = check_list_exists(database, None)
+            checked_exists = check_list_exists(database, None)  # Checks that the list exists in the database
             if checked_exists is not None:
                 del database[checked_exists]
                 print("Successfully deleted.")
@@ -211,7 +214,7 @@ def nice_print(database, list_name):
     string = []
     count = 1
     for x in database[list_name]:
-        if count < 11:  # This is because "10" has to digits and messes with the spacing.
+        if count < 11:  # This is because "10" has two digits and messes with the spacing.
             spaces = ", "
         else:
             if database[list_name].index(x) == (len(database[list_name]) - 2):
@@ -396,9 +399,9 @@ def import_database(database):
 
 def main():
     lists = defaultdict(list)
-    menu_options()
-    option = user_input(8, 9, "NONE")
     unsaved = False  # Tracks whether there are unsaved changes in the database
+    menu_options(unsaved)
+    option = user_input(8, 9, "NONE")
 
     # For testing, creates temp lists
     test = 'test'
@@ -457,7 +460,7 @@ def main():
             else:
                 break
         print("\n")
-        menu_options()
+        menu_options(unsaved)
         option = user_input(8, 9, "NONE")
     print("\n\nExiting")
 
