@@ -215,21 +215,19 @@ def nice_print(database, list_name):
     count = 1
     for x in database[list_name]:
         if count < 11:  # This is because "10" has two digits and messes with the spacing.
-            spaces = ", "
+            spaces = " "
         else:
-            if database[list_name].index(x) == (len(database[list_name]) - 2):
-                spaces = ""
-            else:
-                spaces = " " * (len(str(count)))
+            spaces = " " * (len(str(count)))
         string += [str(x)]
         if count < 11:
+            string += [","]
             string += [spaces]
             count += 1
         else:
             string += [","]
             string += [spaces]
             count += 1
-    del string[len(string) - 1]
+    del string[-2]
     for i in string:
         print(i, sep="", end="")
     print("\n", index_string, sep="")
