@@ -68,6 +68,8 @@ def yes_no(message=None, exit_word=None):
     while (y_n_input != 'y') and (y_n_input != 'n') and (y_n_input != "yes") and (y_n_input != "no"):
         print("Invalid input\n")
         y_n_input = input(message).lower()
+        if (y_n_input == exit_word) and (exit_word is not None):
+            return
     if (y_n_input == 'y') or (y_n_input == "yes"):
         return True
     elif (y_n_input == 'n') or (y_n_input == "no"):
